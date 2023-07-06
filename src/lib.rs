@@ -85,8 +85,8 @@ impl Logsnag {
     /// let publish_response = client.publish("my-channel".to_string(), 
     ///     "my-event".to_string(), 
     ///     Some("My Description".to_string()), 
-    ///     Some(None), 
-    ///     Some(None))
+    ///     None, 
+    ///     None)
     ///     .await;
     pub async fn publish(&self, channel: String, event: String, description: Option<String>, icon: Option<String>, notify: Option<bool>) -> Result<Response, Error> {
 
@@ -140,8 +140,8 @@ impl Logsnag {
     /// let client = Logsnag::new("my-api-token".to_string(), "my-project".to_string());
     /// let response = client.insight("my-title".to_string(), 
     ///     "my-event".to_string(), 
-    ///     InsightValue::Str("online".to_string()), //or InsightValue::new(10) for numbers 
-    ///     Some("❤️".to_string())) 
+    ///     InsightValue::Str("online".to_string()), //InsightValue::Int(69), InsightValue::Bool(false)
+    ///     Some("❤️".to_string())) //or None
     ///     .await.expect("Failed to publish insight");
     /// ```
     pub async fn insight(&self, title: String, value: InsightValue, icon: Option<String>) -> Result<Response, Error> {
@@ -152,7 +152,9 @@ impl Logsnag {
             icon: icon
         };
 
+        println!("{:?}", insight);
         let request_data = serde_json::to_value(&insight)?;
+        println!("{:?}", request_data);
 
         let request = self
             .client

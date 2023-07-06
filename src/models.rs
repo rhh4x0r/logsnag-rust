@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Log {
@@ -16,11 +16,26 @@ pub struct Log {
     pub notify: Option<bool>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub enum InsightValue {
     Str(String),
     Int(i32),
+    Bool(bool)
 }
+
+impl Serialize for InsightValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match *self {
+            InsightValue::Str(ref s) => serializer.serialize_str(s),
+            InsightValue::Int(i) => serializer.serialize_i32(i),
+            InsightValue::Bool(b)=> serializer.serialize_bool(b),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Insight {
     pub project: String,

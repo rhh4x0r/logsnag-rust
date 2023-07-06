@@ -10,15 +10,14 @@
 - Publish logs to channels with specified event, optional description, icon, and notify flag
 - Publish insights with a specified title, event, value, and an optional icon
 - [TODO] Support tags
-- [TODO] Support validation for inputs on the strings
-
+- [TODO] Support validation for inputs on the strings pre-runtime
 ## Getting Started
 
 First, add `logsnag` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-logsnag = "0.2.3"
+logsnag = "0.3.0"
 ```
 Then, import it in your file(s).
 
@@ -36,21 +35,27 @@ use logsnag::Logsnag;
 use logsnag::models::InsightValue;
 
 async fn main() {
-    let client = Logsnag::new("my-api-token".to_string(), "my-project".to_string());
+    let logsnag = Logsnag::new(
+        env::var("LOGSNAG_API_KEY").expect("No Logsnag API Key found"), 
+        env::var("LOGSNAG_PROJECT").expect("No Logsnag Project found")
+    );
 
-    let publish_response = client.publish(
+    //Use the following for Raw Strings
+    //let client = Logsnag::new("my-api-token".to_string(), "my-project".to_string());
+
+    let publish_response = logsnag.publish(
         "channel".to_string(),
         "event".to_string(),
         Some("description".to_string()),
-        Some("icon".to_string()),
+        Some("❤️".to_string()),
         Some(true)
     ).await.expect("Failed to publish log");
 
-    let insight_response = client.insight(
+    let insight_response = logsnag.insight(
         "title".to_string(), 
         "event".to_string(), 
-        InsightValue::new("online"), //or InsightValue::new(10) for numbers 
-        Some("❤️")
+        InsightValue::Str("online"), //InsightValue::Int(69), InsightValue::Bool(false)
+        Some("❤️".to_string())
     ).await.expect("Failed to publish insight");
 }
 ```
