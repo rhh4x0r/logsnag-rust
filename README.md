@@ -17,8 +17,8 @@ First, add `logsnag` to your `Cargo.toml`:
 ```toml
 [dependencies]
 logsnag = "0.2.0"
-
-Then, import it in your file(s):
+```
+Then, import it in your file(s).
 
 ```rust
 use logsnag::Logsnag;
