@@ -1,0 +1,1 @@
+# A Logsnag API Wrapper for Rust
