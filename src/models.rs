@@ -1,11 +1,4 @@
 use serde::{Deserialize, Serialize};
-use crate::client::Client;
-
-#[derive(Debug)]
-pub struct Logsnag {
-    pub config: Config,
-    pub client: Client,
-}
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Log {

@@ -1,7 +1,7 @@
-mod models;
-mod client;
+pub mod models;
+pub mod client;
 
-use models::{ Logsnag, Log, Insight, InsightValue, Config};
+use models::{ Log, Insight, InsightValue, Config};
 use client::Client;
 
 use reqwest::header::CONTENT_TYPE;
@@ -13,15 +13,76 @@ use anyhow::anyhow;
 //TODO change to v1/ and then add /log or /insights depending on what they want
 const PUBLISH_API_URL: &str = "https://api.logsnag.com/v1/log";
 const INSIGHT_API_URL: &str = "https://api.logsnag.com/v1/insight";
+/// `Logsnag` is a struct used to interact with the Logsnag API.
+/// It contains the configuration and client needed to make requests.
+#[derive(Debug)]
+pub struct Logsnag {
+    pub config: Config,
+    pub client: Client,
+}
 
 impl Logsnag {
+
+    /// This method creates a new instance of a Logsnag client.
+    ///
+    /// # Arguments
+    ///
+    /// * `api_token` - A string slice that holds the API token.
+    /// * `project` - A string slice that holds the name of the project.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use logsnag::Logsnag;
+    ///
+    /// let client = Logsnag::new("my-api-token", "my-project");
+    /// ```
     pub fn new(api_token: &str, project: &str) -> Logsnag {
         Logsnag { 
                 config: Config::new(api_token, project),
                 client: Client::new(),
             }
     }
-
+    /// Publishes a log to the given channel with the specified event and optional description, icon, and notify flag.
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - The instance of the `Logsnag` struct.
+    /// * `channel` - A `String` representing the channel to which the log is to be published.
+    /// * `event` - A `String` representing the event that is to be logged.
+    /// * `description` - An `Option<String>` that can contain the description of the event. This is optional.
+    /// * `icon` - An `Option<String>` that can contain the URI of the icon to be used with the log. This is optional.
+    /// * `notify` - An `Option<bool>` that can flag whether or not to notify the channel of the event. This is optional.
+    ///
+    /// # Returns
+    ///
+    /// * `Result<Response, Error>` - Returns a `Result` type. On success, it contains a `Response` which represents the server's response to the request (`reqwest::async_impl::response`). On failure, it contains an `Error`.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if the server's response indicates a failure (i.e., the response status is not 200).
+    /// # Examples
+    ///
+    /// ```
+    /// use logsnag::Logsnag;
+    ///
+    /// let client = Logsnag::new("my-api-token", "my-project");
+    /// let response = client.publish("my-channel", 
+    ///     "my-event", 
+    ///     Some("my-description"), 
+    ///     Some("❤️"), 
+    ///     Some(true))
+    ///     .await;
+    /// ```
+    /// 
+    /// Note that non-required values are Options. So you need to wrap them in Some() or use None.
+    /// ```
+    /// let response = client.publish("my-channel", 
+    ///     "my-event", 
+    ///     Some("mydescription", 
+    ///     None, 
+    ///     None))
+    ///     .await;
     pub async fn publish(self, channel: String, event: String, description: Option<String>, icon: Option<String>, notify: Option<bool>) -> Result<Response, Error> {
 
         let log = Log {
@@ -45,14 +106,39 @@ impl Logsnag {
         let response = request.send().await?;
 
         if response.status() == 200 {
-            println!("Sent log to client.");
-
             Ok(response)
         } else {
             Err(anyhow!("Error in response: {:?}", response.text().await))
         }
     }
 
+    /// Publishes an insight with the given title, event, value, and an optional icon.
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - The instance of the `Logsnag` struct.
+    /// * `title` - A `String` representing the title of the insight.
+    /// * `event` - A `String` representing the event related to the insight.
+    /// * `value` - An `InsightValue` that can be either a `String` or a numeric type, depending on the specific insight. For example, for an online status insight, you might use `InsightValue::new("online")`, and for a numeric count of errors, you might use `InsightValue::new(10)`.
+    /// * `icon` - An `Option<String>` that can contain the icon to be used with the insight. This is optional.
+    ///
+    /// # Returns
+    ///
+    /// * `Result<Response, Error>` - Returns a `Result` type. On success, it contains a `Response` which represents the server's response to the request. On failure, it contains an `Error`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use logsnag::Logsnag;
+    /// use logsnag::models::InsightValue;
+    ///
+    /// let client = Logsnag::new("my-api-token", "my-project");
+    /// let response = client.insight("my-title", 
+    ///     "my-event", 
+    ///     InsightValue::new("online"), //or InsightValue::new(10) for numbers 
+    ///     Some("❤️")) 
+    ///     .await;
+    /// ```
     pub async fn insight(self, title: String, value: InsightValue, icon: Option<String>) -> Result<Response, Error> {
         let insight = Insight {
             project: self.config.project,
