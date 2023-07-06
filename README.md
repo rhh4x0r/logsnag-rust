@@ -36,7 +36,7 @@ use logsnag::models::InsightValue;
 async fn main() {
     let client = Logsnag::new("my-api-token", "my-project");
 
-    let response = client.publish(
+    let publish_response = client.publish(
         "channel",
         "event",
         Some("description"),
@@ -44,7 +44,7 @@ async fn main() {
         Some(true)
     ).await.expect("Failed to publish log");
 
-    let response = client.insight(
+    let insight_response = client.insight(
         "my-title", 
         "my-event", 
         InsightValue::new("online"), //or InsightValue::new(10) for numbers 

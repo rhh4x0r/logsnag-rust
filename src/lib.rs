@@ -37,7 +37,7 @@ impl Logsnag {
     ///
     /// let client = Logsnag::new("my-api-token", "my-project");
     /// ```
-    pub fn new(api_token: &str, project: &str) -> Logsnag {
+    pub fn new(api_token: String, project: String) -> Logsnag {
         Logsnag { 
                 config: Config::new(api_token, project),
                 client: Client::new(),

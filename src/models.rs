@@ -38,10 +38,10 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(api_token: &str, project: &str) -> Config {
+    pub fn new(api_token: String, project: String) -> Config {
         Config {
-            api_token: api_token.to_owned(),
-            project: project.to_owned()
+            api_token: api_token,
+            project: project
         }
     }
 }
