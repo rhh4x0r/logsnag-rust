@@ -152,9 +152,7 @@ impl Logsnag {
             icon: icon
         };
 
-        println!("{:?}", insight);
         let request_data = serde_json::to_value(&insight)?;
-        println!("{:?}", request_data);
 
         let request = self
             .client
