@@ -16,7 +16,7 @@ First, add `logsnag` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-logsnag = "0.2.0"
+logsnag = "0.2.1"
 ```
 Then, import it in your file(s).
 
