@@ -35,16 +35,12 @@ impl Logsnag {
 
         let request_data = serde_json::to_value(&log)?;
 
-        println!("{}", request_data);
-
         let request = self
             .client
             .post(PUBLISH_API_URL)
             .json(&request_data)
             .header(CONTENT_TYPE, "application/json")
             .bearer_auth(&self.config.api_token);
-
-        println!("{:?}", request);
 
         let response = request.send().await?;
 
