@@ -15,7 +15,7 @@ const PUBLISH_API_URL: &str = "https://api.logsnag.com/v1/log";
 const INSIGHT_API_URL: &str = "https://api.logsnag.com/v1/insight";
 /// `Logsnag` is a struct used to interact with the Logsnag API.
 /// It contains the configuration and client needed to make requests.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Logsnag {
     pub config: Config,
     pub client: Client,
@@ -35,7 +35,7 @@ impl Logsnag {
     /// ```
     /// use logsnag::Logsnag;
     ///
-    /// let client = Logsnag::new("my-api-token", "my-project");
+    /// let client = Logsnag::new("my-api-token".to_string(), "my-project".to_string());
     /// ```
     pub fn new(api_token: String, project: String) -> Logsnag {
         Logsnag { 
@@ -47,7 +47,7 @@ impl Logsnag {
     ///
     /// # Arguments
     ///
-    /// * `self` - The instance of the `Logsnag` struct.
+    /// * `&self` - The instance of the `Logsnag` struct.
     /// * `channel` - A `String` representing the channel to which the log is to be published.
     /// * `event` - A `String` representing the event that is to be logged.
     /// * `description` - An `Option<String>` that can contain the description of the event. This is optional.
@@ -65,28 +65,33 @@ impl Logsnag {
     ///
     /// ```
     /// use logsnag::Logsnag;
-    ///
-    /// let client = Logsnag::new("my-api-token", "my-project");
-    /// let response = client.publish("my-channel", 
-    ///     "my-event", 
-    ///     Some("my-description"), 
-    ///     Some("❤️"), 
+    /// 
+    /// // If you don't use env vars, make sure to pass .to_string() on each of the parameters if you initialize the variables inline
+    /// let logsnag = Logsnag::new(
+    ///    env::var("LOGSNAG_API_KEY").expect("No Logsnag API Key found"), 
+    ///    env::var("LOGSNAG_PROJECT").expect("No Logsnag Project found")
+    /// );
+    /// 
+    /// let publish_response = client.publish("my-channel".to_string(), 
+    ///     "my-event".to_string(), 
+    ///     Some("My Description".to_string()), 
+    ///     Some("❤️".to_string()), 
     ///     Some(true))
     ///     .await;
     /// ```
     /// 
     /// Note that non-required values are Options. So you need to wrap them in Some() or use None.
     /// ```
-    /// let response = client.publish("my-channel", 
-    ///     "my-event", 
-    ///     Some("mydescription", 
-    ///     None, 
-    ///     None))
+    /// let publish_response = client.publish("my-channel".to_string(), 
+    ///     "my-event".to_string(), 
+    ///     Some("My Description".to_string()), 
+    ///     Some(None), 
+    ///     Some(None))
     ///     .await;
-    pub async fn publish(self, channel: String, event: String, description: Option<String>, icon: Option<String>, notify: Option<bool>) -> Result<Response, Error> {
+    pub async fn publish(&self, channel: String, event: String, description: Option<String>, icon: Option<String>, notify: Option<bool>) -> Result<Response, Error> {
 
         let log = Log {
-            project: self.config.project,
+            project: self.config.project.clone(),
             channel: channel,
             event: event,
             description: description,
@@ -116,7 +121,7 @@ impl Logsnag {
     ///
     /// # Arguments
     ///
-    /// * `self` - The instance of the `Logsnag` struct.
+    /// * `&self` - The instance of the `Logsnag` struct.
     /// * `title` - A `String` representing the title of the insight.
     /// * `event` - A `String` representing the event related to the insight.
     /// * `value` - An `InsightValue` that can be either a `String` or a numeric type, depending on the specific insight. For example, for an online status insight, you might use `InsightValue::new("online")`, and for a numeric count of errors, you might use `InsightValue::new(10)`.
@@ -132,16 +137,16 @@ impl Logsnag {
     /// use logsnag::Logsnag;
     /// use logsnag::models::InsightValue;
     ///
-    /// let client = Logsnag::new("my-api-token", "my-project");
-    /// let response = client.insight("my-title", 
-    ///     "my-event", 
-    ///     InsightValue::new("online"), //or InsightValue::new(10) for numbers 
-    ///     Some("❤️")) 
-    ///     .await;
+    /// let client = Logsnag::new("my-api-token".to_string(), "my-project".to_string());
+    /// let response = client.insight("my-title".to_string(), 
+    ///     "my-event".to_string(), 
+    ///     InsightValue::Str("online".to_string()), //or InsightValue::new(10) for numbers 
+    ///     Some("❤️".to_string())) 
+    ///     .await.expect("Failed to publish insight");
     /// ```
-    pub async fn insight(self, title: String, value: InsightValue, icon: Option<String>) -> Result<Response, Error> {
+    pub async fn insight(&self, title: String, value: InsightValue, icon: Option<String>) -> Result<Response, Error> {
         let insight = Insight {
-            project: self.config.project,
+            project: self.config.project.clone(),
             title: title,
             value: value,
             icon: icon
