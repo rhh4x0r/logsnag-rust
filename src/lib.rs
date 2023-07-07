@@ -1,7 +1,9 @@
 pub mod models;
 pub mod client;
 
-use models::{ Log, Insight, InsightValue, Config};
+use std::collections::HashMap;
+
+use models::{ Log, Insight, InsightValue, TagHashMap, Config};
 use client::Client;
 
 use reqwest::header::CONTENT_TYPE;
@@ -88,7 +90,7 @@ impl Logsnag {
     ///     None, 
     ///     None)
     ///     .await;
-    pub async fn publish(&self, channel: String, event: String, description: Option<String>, icon: Option<String>, notify: Option<bool>) -> Result<Response, Error> {
+    pub async fn publish(&self, channel: String, event: String, description: Option<String>, icon: Option<String>, notify: Option<bool>, tags: Option<TagHashMap>) -> Result<Response, Error> {
 
         let log = Log {
             project: self.config.project.clone(),
@@ -96,10 +98,13 @@ impl Logsnag {
             event: event,
             description: description,
             icon: icon,
-            notify: notify
+            notify: notify,
+            tags: tags
         };
 
         let request_data = serde_json::to_value(&log)?;
+
+        println!("{:?}", request_data);
 
         let request = self
             .client

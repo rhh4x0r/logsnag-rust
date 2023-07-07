@@ -1,4 +1,32 @@
 use serde::{Deserialize, Serialize, Serializer};
+use std::collections::HashMap;
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+pub struct TagHashMap {
+    tags: HashMap<String, String>,
+}
+
+impl TagHashMap {
+    pub fn new() -> Self {
+        Self { tags: HashMap::new() }
+    }
+
+    pub fn insert(&mut self, key: &str, value: &str) {
+        let key = key.to_lowercase().replace("_", "-").replace(" ", "-");
+        let value = value.to_lowercase().replace("_", "-").replace(" ", "-");
+
+        self.tags.insert(key, value.to_owned());
+    }
+}
+
+impl Serialize for TagHashMap {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.tags.serialize(serializer)
+    }
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Log {
@@ -14,6 +42,9 @@ pub struct Log {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub notify: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<TagHashMap>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
