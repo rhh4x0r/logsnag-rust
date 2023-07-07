@@ -67,6 +67,7 @@ impl Logsnag {
     ///
     /// ```
     /// use logsnag::Logsnag;
+    /// use Logsnag::models::TagHashMap;
     /// 
     /// // If you don't use env vars, make sure to pass .to_string() on each of the parameters if you initialize the variables inline
     /// let logsnag = Logsnag::new(
@@ -74,11 +75,16 @@ impl Logsnag {
     ///    env::var("LOGSNAG_PROJECT").expect("No Logsnag Project found")
     /// );
     /// 
+    /// let mut tags = TagHashMap::new();
+    /// tags.insert("guild-id", "test-guild-id");
+    /// tags.insert("User_Name", "test-username-id"); //will auto lowercase and change "_" to "-" to fit API constraints
+    /// 
     /// let publish_response = client.publish("my-channel".to_string(), 
     ///     "my-event".to_string(), 
     ///     Some("My Description".to_string()), 
     ///     Some("❤️".to_string()), 
-    ///     Some(true))
+    ///     Some(true),
+    ///     Some(tags))
     ///     .await;
     /// ```
     /// 
@@ -88,6 +94,7 @@ impl Logsnag {
     ///     "my-event".to_string(), 
     ///     Some("My Description".to_string()), 
     ///     None, 
+    ///     None,
     ///     None)
     ///     .await;
     pub async fn publish(&self, channel: String, event: String, description: Option<String>, icon: Option<String>, notify: Option<bool>, tags: Option<TagHashMap>) -> Result<Response, Error> {
@@ -145,7 +152,7 @@ impl Logsnag {
     /// let client = Logsnag::new("my-api-token".to_string(), "my-project".to_string());
     /// let response = client.insight("my-title".to_string(), 
     ///     "my-event".to_string(), 
-    ///     InsightValue::Str("online".to_string()), //InsightValue::Int(69), InsightValue::Bool(false)
+    ///     InsightValue::Str("online"), //InsightValue::Int(69), InsightValue::Bool(false)
     ///     Some("❤️".to_string())) //or None
     ///     .await.expect("Failed to publish insight");
     /// ```
