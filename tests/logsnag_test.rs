@@ -10,7 +10,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_publish() {
-
         dotenv().ok();
 
         let logsnag = Logsnag::new(
@@ -40,9 +39,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_insight() {
+        dotenv().ok();
+
         let logsnag = Logsnag::new(
-            "".to_string(),
-            "".to_string()
+            env::var("LOGSNAG_API_KEY").expect("No Logsnag API Key (LOGSNAG_API_KEY) found in environment variables."),
+            env::var("LOGSNAG_PROJECT").expect("No Logsnag Project (LOGSNAG_PROJECT) found in environment variables.")
         );
 
         let insight_result = logsnag.insight(
