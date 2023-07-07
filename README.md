@@ -5,24 +5,28 @@
 
 `logsnag` is a simple and efficient Rust library for interacting with the [Logsnag](https://docs.logsnag.com/endpoints/log) API. It supports asynchronous requests and allows easy publication of logs and insights.
 
+Note: this crate is currently being actively developed. It may change a lot until v1.0. Keep this in mind if you're using it for production apps.
+
 ## Features
 
 - Publish logs to channels with specified event, optional description, icon, and notify flag
 - Publish insights with a specified title, event, value, and an optional icon
-- [TODO] Support tags
-- [TODO] Support validation for inputs on the strings pre-runtime
+- Support tags
+- Support validation for inputs on the strings (some)
+- [TODO] Make wrapper calls easier (ex. &str instead of Strings, inline tag input)
 ## Getting Started
 
 First, add `logsnag` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-logsnag = "0.3.1"
+logsnag = "0.3.2"
 ```
 Then, import it in your file(s).
 
 ```rust
 use logsnag::Logsnag;
+use logsnag::models::TagHashMap;
 use logsnag::models::InsightValue; //Only required for Insights
 ```
 
@@ -32,6 +36,7 @@ Here is a basic example of how to use the `Logsnag` client:
 
 ```rust
 use logsnag::Logsnag;
+use logsnag::models::TagHashMap;
 use logsnag::models::InsightValue;
 
 async fn main() {
@@ -43,12 +48,17 @@ async fn main() {
     //Use the following for Raw Strings
     //let client = Logsnag::new("my-api-token".to_string(), "my-project".to_string());
 
+    let mut tags = TagHashMap::new();
+    tags.insert("guild-id", "test-guild-id");
+    tags.insert("User_Name", "test-username-id"); //will auto lowercase and change "_" to "-" to fit API constraints
+
     let publish_response = logsnag.publish(
         "channel".to_string(),
         "event".to_string(),
         Some("description".to_string()),
         Some("❤️".to_string()),
-        Some(true)
+        Some(true),
+        Some(tags)
     ).await.expect("Failed to publish log");
 
     let insight_response = logsnag.insight(
