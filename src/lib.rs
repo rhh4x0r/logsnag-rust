@@ -15,6 +15,59 @@ use anyhow::anyhow;
 //TODO change to v1/ and then add /log or /insights depending on what they want
 const PUBLISH_API_URL: &str = "https://api.logsnag.com/v1/log";
 const INSIGHT_API_URL: &str = "https://api.logsnag.com/v1/insight";
+
+pub struct EventBuilder<'a> {
+    logsnag: &'a Logsnag<'a>,
+    log: Log<'a>
+}
+
+impl<'a> EventBuilder<'a> {
+
+    pub fn with_description(&'a mut self, description: &'a str) -> &'a mut Self{
+        self.log.description = Some(description);
+        self
+    }
+
+    pub fn with_icon(&'a mut self, icon: &'a str) -> &'a mut Self{
+        self.log.icon = Some(icon);
+        self
+    }
+
+    pub fn with_notify(&'a mut self, notify: bool) -> &'a mut Self{
+        self.log.notify = Some(notify);
+        self
+    }
+
+    pub fn with_tag(&'a mut self, tag_key: &str, tag_value: &str) -> &'a mut Self {
+
+        let tag_map = self.log.tags.get_or_insert_with(|| TagHashMap::new());
+        tag_map.insert(tag_key, tag_value);
+
+        self
+    }
+
+    pub async fn publish(&self) -> Result<Response, Error>{
+        let request_data = serde_json::to_value(self.log.to_owned())?;
+
+        println!("{:?}", request_data);
+
+        let response = self
+            .logsnag
+            .client
+            .post(PUBLISH_API_URL)
+            .json(&request_data)
+            .header(CONTENT_TYPE, "application/json")
+            .bearer_auth(self.logsnag.config.api_token)
+            .send()
+            .await?;
+
+        if response.status() == 200 {
+            Ok(response)
+        } else {
+            Err(anyhow!("Error in response: {:?}", response.text().await))
+        }
+    }
+}
 /// `Logsnag` is a struct used to interact with the Logsnag API.
 /// It contains the configuration and client needed to make requests.
 #[derive(Clone, Debug)]
@@ -97,36 +150,14 @@ impl<'a> Logsnag<'a> {
     ///     None,
     ///     None)
     ///     .await;
-    pub async fn publish(&self, channel: &str, event: &str, description: Option<&str>, icon: Option<&str>, notify: Option<bool>, tags: Option<TagHashMap>) -> Result<Response, Error> {
+    pub fn event(&'a self, channel: &'a str, event: &'a str) -> EventBuilder<'_> {
+        let event_log = Log::new(&self.config.project, channel, event);
 
-        let log = Log {
-            project: self.config.project,
-            channel: channel,
-            event: event,
-            description: description,
-            icon: icon,
-            notify: notify,
-            tags: tags
-        };
-
-        let request_data = serde_json::to_value(&log)?;
-
-        println!("{:?}", request_data);
-
-        let request = self
-            .client
-            .post(PUBLISH_API_URL)
-            .json(&request_data)
-            .header(CONTENT_TYPE, "application/json")
-            .bearer_auth(&self.config.api_token);
-
-        let response = request.send().await?;
-
-        if response.status() == 200 {
-            Ok(response)
-        } else {
-            Err(anyhow!("Error in response: {:?}", response.text().await))
+        EventBuilder {
+            logsnag: self,
+            log: event_log
         }
+
     }
 
     /// Publishes an insight with the given title, event, value, and an optional icon.

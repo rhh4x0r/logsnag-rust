@@ -28,6 +28,7 @@ impl Serialize for TagHashMap {
     }
 }
 
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Log<'a> {
     pub project: &'a str,
@@ -45,6 +46,20 @@ pub struct Log<'a> {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<TagHashMap>,
+}
+
+impl<'a> Log<'a> {
+    pub fn new(project: &'a str, channel: &'a str, event: &'a str) -> Log<'a> {
+        Log {
+            project,
+            channel,
+            event,
+            description: None,
+            icon: None,
+            notify: None,
+            tags: None,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
@@ -91,4 +106,5 @@ impl<'a> Config<'a> {
         }
     }
 }
+
 

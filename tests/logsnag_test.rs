@@ -25,28 +25,18 @@ mod tests {
         tags.insert("guild-id", "test-guild-id");
         tags.insert("User_Name", "test-username-id");
 
-        let publish_result = logsnag.publish(
-            "test",
-            "Test Event",
-            Some("A description here"),
-            Some("❤️"),
-            Some(true),
-            Some(tags),
-        ).await;
-
-        let publish_result2 = logsnag.publish(
-            "test",
-            "Test Event 2",
-            Some("A description two here"),
-            Some("❤️"),
-            Some(true),
-            None,
-        ).await;
+        let publish_result = logsnag.event("test","Test Event")
+            .with_notify(true)
+            .with_description("ayooooo")
+            .with_icon("💀")
+            .with_tag("tag", "tag-value")
+            .with_tag("taganother", "tag-2-value")
+            .publish()
+            .await;
 
         println!("{:?}", publish_result);
 
         assert!(publish_result.is_ok());
-
     }
 
     #[tokio::test]
