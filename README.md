@@ -19,7 +19,7 @@ First, add `logsnag` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-logsnag = "0.4.0"
+logsnag = "0.5.0"
 ```
 Then, import it in your file(s).
 
@@ -29,7 +29,7 @@ use logsnag::Logsnag;
 
 ## Usage
 
-Here is a basic example of how to use the `Logsnag` client. It uses a builder to add on to the initial event/insight for the optional parameters. Note that for tags, you can add one at a time with `with_tag()`:
+Here is a basic example of how to use the `Logsnag` client. It uses a builder to add on to the initial event/insight for the optional parameters. Anything that has `with_` is an optional function. Note that for tags, you must add one at a time with `with_tag()`:
 
 ```rust
 use logsnag::Logsnag;
@@ -48,19 +48,28 @@ async fn main() {
         .with_notify(true)
         .with_description("description")
         .with_icon("❤️")
-        .with_tag("firsttag", "value")
-        .with_tag("secondtag", "secondvalue")
+        .with_tag("tag", "value")
+        .with_tag("tag2", "value2")
         .publish()
         .await;
 
-    let insight_result = logsnag.insight("Status", "online")
-        .with_icon("💀")
+    let insight_result = logsnag.insight("title", "value") //value can be also an Int or a bool
+        .with_icon("🟢")
         .publish()
         .await;
 }
 ```
 
-See the [API Documentation](https://docs.rs/logsnag) for more details.
+
+### Auto Validation
+
+Tags have a specific format that they need to be in to pass correctly to publish an event. They need to be lowercase, have no special characters, no spaces, and no uppercase characters. Only dashes are allowed.
+
+`with_tag()` automatically will parse your text and strip the unwanted characters out to prevent runtime errors. There's not a currently known way to check validation on compile time within Rust, but if that changes we will implement it. If you know of a way to do this within functions let us know. 
+
+## Docs
+
+See the [API Documentation](https://docs.rs/logsnag) for more details around the methods we use in this library.
 
 ## Contributing
 

@@ -1,7 +1,5 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use dotenv::dotenv;
     use std::env;
 
@@ -19,12 +17,13 @@ mod tests {
             &logsnag_project
         );
 
+        //channel name must be a string of lowercase letterse, numbers, underscores, and dashes
         let publish_result = logsnag.event("test","Test Event")
             .with_notify(true)
             .with_description("ayooooo")
             .with_icon("💀")
-            .with_tag("tag", "tag-value")
-            .with_tag("taganother", "tag-2-value")
+            .with_tag("tAg-one", "tag88-value")
+            .with_tag("tag_another", "tag-2-value")
             .publish()
             .await;
 
