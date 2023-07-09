@@ -29,16 +29,16 @@ impl Serialize for TagHashMap {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
-pub struct Log {
-    pub project: String,
-    pub channel: String,
-    pub event: String,
+pub struct Log<'a> {
+    pub project: &'a str,
+    pub channel: &'a str,
+    pub event: &'a str,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
+    pub description: Option<&'a str>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<String>,
+    pub icon: Option<&'a str>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub notify: Option<bool>,
@@ -68,26 +68,27 @@ impl Serialize for InsightValue {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
-pub struct Insight {
-    pub project: String,
-    pub title: String,
+pub struct Insight<'a> {
+    pub project: &'a str,
+    pub title: &'a str,
     pub value: InsightValue,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<String>
+    pub icon: Option<&'a str>
 }
 
 #[derive(Debug, Clone)]
-pub struct Config {
-    pub api_token: String,
-    pub project: String
+pub struct Config<'a> {
+    pub api_token: &'a str,
+    pub project: &'a str,
 }
 
-impl Config {
-    pub fn new(api_token: String, project: String) -> Config {
+impl<'a> Config<'a> {
+    pub fn new(api_token: &'a str, project: &'a str) -> Config<'a> {
         Config {
             api_token: api_token,
             project: project
         }
     }
 }
+

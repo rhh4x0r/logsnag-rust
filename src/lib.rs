@@ -18,12 +18,12 @@ const INSIGHT_API_URL: &str = "https://api.logsnag.com/v1/insight";
 /// `Logsnag` is a struct used to interact with the Logsnag API.
 /// It contains the configuration and client needed to make requests.
 #[derive(Clone, Debug)]
-pub struct Logsnag {
-    pub config: Config,
+pub struct Logsnag<'a> {
+    pub config: Config<'a>,
     pub client: Client,
 }
 
-impl Logsnag {
+impl<'a> Logsnag<'a> {
 
     /// This method creates a new instance of a Logsnag client.
     ///
@@ -39,7 +39,7 @@ impl Logsnag {
     ///
     /// let client = Logsnag::new("my-api-token".to_string(), "my-project".to_string());
     /// ```
-    pub fn new(api_token: String, project: String) -> Logsnag {
+    pub fn new(api_token: &'a str, project: &'a str) -> Logsnag<'a> {
         Logsnag { 
                 config: Config::new(api_token, project),
                 client: Client::new(),
@@ -97,10 +97,10 @@ impl Logsnag {
     ///     None,
     ///     None)
     ///     .await;
-    pub async fn publish(&self, channel: String, event: String, description: Option<String>, icon: Option<String>, notify: Option<bool>, tags: Option<TagHashMap>) -> Result<Response, Error> {
+    pub async fn publish(&self, channel: &str, event: &str, description: Option<&str>, icon: Option<&str>, notify: Option<bool>, tags: Option<TagHashMap>) -> Result<Response, Error> {
 
         let log = Log {
-            project: self.config.project.clone(),
+            project: self.config.project,
             channel: channel,
             event: event,
             description: description,
@@ -156,9 +156,9 @@ impl Logsnag {
     ///     Some("❤️".to_string())) //or None
     ///     .await.expect("Failed to publish insight");
     /// ```
-    pub async fn insight(&self, title: String, value: InsightValue, icon: Option<String>) -> Result<Response, Error> {
+    pub async fn insight(&self, title: &str, value: InsightValue, icon: Option<&str>) -> Result<Response, Error> {
         let insight = Insight {
-            project: self.config.project.clone(),
+            project: self.config.project,
             title: title,
             value: value,
             icon: icon
