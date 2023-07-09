@@ -4,8 +4,6 @@ pub mod client;
 use models::{ Log, Insight, InsightValue, TagHashMap, Config};
 use client::Client;
 
-use lazy_regex::regex_is_match;
-
 use reqwest::header::CONTENT_TYPE;
 use reqwest::Response;
 
