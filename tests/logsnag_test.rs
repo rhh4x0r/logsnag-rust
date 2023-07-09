@@ -6,7 +6,6 @@ mod tests {
     use std::env;
 
     use logsnag::Logsnag;
-    use logsnag::models::{ InsightValue, TagHashMap };
 
     #[tokio::test]
     async fn test_publish() {
@@ -19,11 +18,6 @@ mod tests {
             &logsnag_key,
             &logsnag_project
         );
-
-        let mut tags = TagHashMap::new();
-
-        tags.insert("guild-id", "test-guild-id");
-        tags.insert("User_Name", "test-username-id");
 
         let publish_result = logsnag.event("test","Test Event")
             .with_notify(true)

@@ -13,60 +13,50 @@ Note: this crate is currently being actively developed. It may change a lot unti
 - Publish insights with a specified title, event, value, and an optional icon
 - Support tags
 - Support validation for inputs on the strings (some)
-- [TODO] Make wrapper calls easier (ex. &str instead of Strings, inline tag input)
 ## Getting Started
 
 First, add `logsnag` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-logsnag = "0.3.2"
+logsnag = "0.4.0"
 ```
 Then, import it in your file(s).
 
 ```rust
 use logsnag::Logsnag;
-use logsnag::models::TagHashMap;
-use logsnag::models::InsightValue; //Only required for Insights
 ```
 
 ## Usage
 
-Here is a basic example of how to use the `Logsnag` client:
+Here is a basic example of how to use the `Logsnag` client. It uses a builder to add on to the initial event/insight for the optional parameters. Note that for tags, you can add one at a time with `with_tag()`:
 
 ```rust
 use logsnag::Logsnag;
-use logsnag::models::TagHashMap;
-use logsnag::models::InsightValue;
 
 async fn main() {
+
+    let logsnag_key = env::var("LOGSNAG_API_KEY").expect("No Logsnag API Key (LOGSNAG_API_KEY) found in environment variables.");
+    let logsnag_project = env::var("LOGSNAG_PROJECT").expect("No Logsnag Project (LOGSNAG_PROJECT) found in environment variables.");
+
     let logsnag = Logsnag::new(
-        env::var("LOGSNAG_API_KEY").expect("No Logsnag API Key found"), 
-        env::var("LOGSNAG_PROJECT").expect("No Logsnag Project found")
+        &logsnag_key, //or pass "your-api-key-here"
+        &logsnag_project //or pass "your-logsnag-project-here"
     );
 
-    //Use the following for Raw Strings
-    //let client = Logsnag::new("my-api-token".to_string(), "my-project".to_string());
+    let publish_result = logsnag.event("channel","event")
+        .with_notify(true)
+        .with_description("description")
+        .with_icon("❤️")
+        .with_tag("firsttag", "value")
+        .with_tag("secondtag", "secondvalue")
+        .publish()
+        .await;
 
-    let mut tags = TagHashMap::new();
-    tags.insert("guild-id", "test-guild-id");
-    tags.insert("User_Name", "test-username-id"); //will auto lowercase and change "_" to "-" to fit API constraints
-
-    let publish_response = logsnag.publish(
-        "channel".to_string(),
-        "event".to_string(),
-        Some("description".to_string()),
-        Some("❤️".to_string()),
-        Some(true),
-        Some(tags)
-    ).await.expect("Failed to publish log");
-
-    let insight_response = logsnag.insight(
-        "title".to_string(), 
-        "event".to_string(), 
-        InsightValue::Str("online"), //InsightValue::Int(69), InsightValue::Bool(false)
-        Some("❤️".to_string())
-    ).await.expect("Failed to publish insight");
+    let insight_result = logsnag.insight("Status", "online")
+        .with_icon("💀")
+        .publish()
+        .await;
 }
 ```
 
