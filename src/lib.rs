@@ -13,12 +13,12 @@ use anyhow::anyhow;
 const PUBLISH_API_URL: &str = "https://api.logsnag.com/v1/log";
 const INSIGHT_API_URL: &str = "https://api.logsnag.com/v1/insight";
 
-pub struct EventBuilder {
-    logsnag: Logsnag,
+pub struct EventBuilder<'a> {
+    logsnag: &'a Logsnag,
     log: Log
 }
 
-impl EventBuilder {
+impl EventBuilder<'_> {
     pub fn with_description<T: AsRef<str>>(mut self, description: T) -> Self {
         self.log.description = Some(description.as_ref().to_owned());
         self
@@ -60,12 +60,12 @@ impl EventBuilder {
     }
 }
 
-pub struct InsightBuilder {
-    logsnag: Logsnag,
+pub struct InsightBuilder<'a> {
+    logsnag: &'a Logsnag,
     insight: Insight
 }
 
-impl InsightBuilder {
+impl InsightBuilder<'_> {
     pub fn with_icon<T: AsRef<str>>(mut self, icon: T) -> Self{
         self.insight.icon = Some(icon.as_ref().to_owned());
         self
@@ -105,16 +105,16 @@ impl Logsnag {
         }
     }
 
-    pub fn event<T: AsRef<str>, U: AsRef<str>>(self, channel: T, event: U) -> EventBuilder {
-        let event_log = Log::new(self.config.project.as_str(), channel.as_ref(), event.as_ref());
+    pub fn event<T: AsRef<str>, U: AsRef<str>>(&self, channel: T, event: U) -> EventBuilder {
+        let event_log = Log::new(&self.config.project.as_str(), channel.as_ref(), event.as_ref());
         EventBuilder {
             logsnag: self,
             log: event_log
         }
     }
 
-    pub fn insight<T: AsRef<str>, U: Into<InsightValue>>(self, title: T, value: U) -> InsightBuilder {
-        let insight_log = Insight::new(self.config.project.as_str(), title.as_ref(), value.into());
+    pub fn insight<T: AsRef<str>, U: Into<InsightValue>>(&self, title: T, value: U) -> InsightBuilder {
+        let insight_log = Insight::new(&self.config.project.as_str(), title.as_ref(), value.into());
         InsightBuilder {
             logsnag: self,
             insight: insight_log
