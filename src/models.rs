@@ -28,17 +28,18 @@ impl Serialize for TagHashMap {
     }
 }
 
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
-pub struct Log {
-    pub project: String,
-    pub channel: String,
-    pub event: String,
+pub struct Log<'a> {
+    pub project: &'a str,
+    pub channel: &'a str,
+    pub event: &'a str,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
+    pub description: Option<&'a str>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<String>,
+    pub icon: Option<&'a str>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub notify: Option<bool>,
@@ -47,14 +48,46 @@ pub struct Log {
     pub tags: Option<TagHashMap>,
 }
 
+impl<'a> Log<'a> {
+    pub fn new(project: &'a str, channel: &'a str, event: &'a str) -> Log<'a> {
+        Log {
+            project,
+            channel,
+            event,
+            description: None,
+            icon: None,
+            notify: None,
+            tags: None,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-pub enum InsightValue {
-    Str(String),
+pub enum InsightValue<'a> {
+    Str(&'a str),
     Int(i32),
     Bool(bool)
 }
 
-impl Serialize for InsightValue {
+impl<'a> From<&'a str> for InsightValue<'a> {
+    fn from(value: &'a str) -> Self {
+        InsightValue::Str(value)
+    }
+}
+
+impl<'a> From<i32> for InsightValue<'a> {
+    fn from(value: i32) -> Self {
+        InsightValue::Int(value)
+    }
+}
+
+impl<'a> From<bool> for InsightValue<'a> {
+    fn from(value: bool) -> Self {
+        InsightValue::Bool(value)
+    }
+}
+
+impl Serialize for InsightValue<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -68,26 +101,39 @@ impl Serialize for InsightValue {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
-pub struct Insight {
-    pub project: String,
-    pub title: String,
-    pub value: InsightValue,
+pub struct Insight<'a> {
+    pub project: &'a str,
+    pub title: &'a str,
+    pub value: InsightValue<'a>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<String>
+    pub icon: Option<&'a str>
+}
+
+impl<'a> Insight<'a> {
+    pub fn new(project: &'a str, title: &'a str, value: InsightValue<'a>) -> Insight<'a> {
+        Insight {
+            project,
+            title,
+            value,
+            icon: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
-pub struct Config {
-    pub api_token: String,
-    pub project: String
+pub struct Config<'a> {
+    pub api_token: &'a str,
+    pub project: &'a str,
 }
 
-impl Config {
-    pub fn new(api_token: String, project: String) -> Config {
+impl<'a> Config<'a> {
+    pub fn new(api_token: &'a str, project: &'a str) -> Config<'a> {
         Config {
             api_token: api_token,
             project: project
         }
     }
 }
+
+
