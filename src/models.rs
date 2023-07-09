@@ -63,13 +63,31 @@ impl<'a> Log<'a> {
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-pub enum InsightValue {
-    Str(String),
+pub enum InsightValue<'a> {
+    Str(&'a str),
     Int(i32),
     Bool(bool)
 }
 
-impl Serialize for InsightValue {
+impl<'a> From<&'a str> for InsightValue<'a> {
+    fn from(value: &'a str) -> Self {
+        InsightValue::Str(value)
+    }
+}
+
+impl<'a> From<i32> for InsightValue<'a> {
+    fn from(value: i32) -> Self {
+        InsightValue::Int(value)
+    }
+}
+
+impl<'a> From<bool> for InsightValue<'a> {
+    fn from(value: bool) -> Self {
+        InsightValue::Bool(value)
+    }
+}
+
+impl Serialize for InsightValue<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -86,10 +104,21 @@ impl Serialize for InsightValue {
 pub struct Insight<'a> {
     pub project: &'a str,
     pub title: &'a str,
-    pub value: InsightValue,
+    pub value: InsightValue<'a>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub icon: Option<&'a str>
+}
+
+impl<'a> Insight<'a> {
+    pub fn new(project: &'a str, title: &'a str, value: InsightValue<'a>) -> Insight<'a> {
+        Insight {
+            project,
+            title,
+            value,
+            icon: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

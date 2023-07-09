@@ -68,6 +68,41 @@ impl<'a> EventBuilder<'a> {
         }
     }
 }
+
+pub struct InsightBuilder<'a> {
+    logsnag: &'a Logsnag<'a>,
+    insight: Insight<'a>
+}
+
+impl<'a> InsightBuilder<'a> {
+
+    pub fn with_icon(&'a mut self, icon: &'a str) -> &'a mut Self{
+        self.insight.icon = Some(icon);
+        self
+    }
+
+    pub async fn publish(&self) -> Result<Response, Error>{
+        let request_data = serde_json::to_value(self.insight.to_owned())?;
+
+        println!("{:?}", request_data);
+
+        let response = self
+            .logsnag
+            .client
+            .post(INSIGHT_API_URL)
+            .json(&request_data)
+            .header(CONTENT_TYPE, "application/json")
+            .bearer_auth(self.logsnag.config.api_token)
+            .send()
+            .await?;
+
+        if response.status() == 200 {
+            Ok(response)
+        } else {
+            Err(anyhow!("Error in response: {:?}", response.text().await))
+        }
+    }
+}
 /// `Logsnag` is a struct used to interact with the Logsnag API.
 /// It contains the configuration and client needed to make requests.
 #[derive(Clone, Debug)]
@@ -187,29 +222,15 @@ impl<'a> Logsnag<'a> {
     ///     Some("❤️".to_string())) //or None
     ///     .await.expect("Failed to publish insight");
     /// ```
-    pub async fn insight(&self, title: &str, value: InsightValue, icon: Option<&str>) -> Result<Response, Error> {
-        let insight = Insight {
-            project: self.config.project,
-            title: title,
-            value: value,
-            icon: icon
-        };
+    pub fn insight<T>(&self, title: &'a str, value: T) -> InsightBuilder<'_>
+    where
+        T: Into<InsightValue<'static>>,
+    {
+        let insight_log = Insight::new(&self.config.project, title, value.into());
 
-        let request_data = serde_json::to_value(&insight)?;
-
-        let request = self
-            .client
-            .post(INSIGHT_API_URL)
-            .json(&request_data)
-            .header(CONTENT_TYPE, "application/json")
-            .bearer_auth(&self.config.api_token);
-
-        let response = request.send().await?;
-
-        if response.status() == 200 {
-            Ok(response)
-        } else {
-            Err(anyhow!("Error in response: {:?}", response.text().await))
+        InsightBuilder {
+            logsnag: self,
+            insight: insight_log
         }
     }
 }

@@ -50,11 +50,10 @@ mod tests {
             &logsnag_key,
             &logsnag_project);
 
-        let insight_result = logsnag.insight(
-            "Insight Title",
-            InsightValue::Int(32),
-            Some("❤️"),
-        ).await;
+        let insight_result = logsnag.insight("Title", "hello")
+            .with_icon("💀")
+            .publish()
+            .await;
 
         println!("{:?}", insight_result);
 
