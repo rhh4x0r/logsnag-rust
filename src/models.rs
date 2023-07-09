@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
-
+use lazy_regex::regex;
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct TagHashMap {
     tags: HashMap<String, String>,
@@ -12,10 +12,19 @@ impl TagHashMap {
     }
 
     pub fn insert(&mut self, key: &str, value: &str) {
-        let key = key.to_lowercase().replace("_", "-").replace(" ", "-");
-        let value = value.to_lowercase().replace("_", "-").replace(" ", "-");
+        //Remove special characters, spaces, numbers, and lowercase everything for LogSnag API constraints
+        let re = regex!(r"[^a-zA-Z\s-]");
+        let key = re.replace_all(key, "");
+        let value = re.replace_all(value, "");
 
-        self.tags.insert(key, value.to_owned());
+        let re_space = regex!(r"\s");
+        let key = re_space.replace_all(&key, "-");
+        let value  = re_space.replace_all(&value, "-");
+
+        let key_validated = key.to_lowercase();
+        let value_validated = value.to_lowercase();
+
+        self.tags.insert(key_validated, value_validated);
     }
 }
 
@@ -27,7 +36,6 @@ impl Serialize for TagHashMap {
         self.tags.serialize(serializer)
     }
 }
-
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Log<'a> {
@@ -61,6 +69,8 @@ impl<'a> Log<'a> {
         }
     }
 }
+
+
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub enum InsightValue<'a> {

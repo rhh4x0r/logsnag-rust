@@ -4,6 +4,8 @@ pub mod client;
 use models::{ Log, Insight, InsightValue, TagHashMap, Config};
 use client::Client;
 
+use lazy_regex::regex_is_match;
+
 use reqwest::header::CONTENT_TYPE;
 use reqwest::Response;
 
@@ -37,7 +39,6 @@ impl<'a> EventBuilder<'a> {
     }
 
     pub fn with_tag(&'a mut self, tag_key: &str, tag_value: &str) -> &'a mut Self {
-
         let tag_map = self.log.tags.get_or_insert_with(|| TagHashMap::new());
         tag_map.insert(tag_key, tag_value);
 
