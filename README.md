@@ -19,7 +19,7 @@ First, add `logsnag` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-logsnag = "0.5.0"
+logsnag = "0.6.0"
 ```
 Then, import it in your file(s).
 
@@ -36,12 +36,9 @@ use logsnag::Logsnag;
 
 async fn main() {
 
-    let logsnag_key = env::var("LOGSNAG_API_KEY").expect("No Logsnag API Key (LOGSNAG_API_KEY) found in environment variables.");
-    let logsnag_project = env::var("LOGSNAG_PROJECT").expect("No Logsnag Project (LOGSNAG_PROJECT) found in environment variables.");
-
     let logsnag = Logsnag::new(
-        &logsnag_key, //or pass "your-api-key-here"
-        &logsnag_project //or pass "your-logsnag-project-here"
+        env::var("LOGSNAG_API_KEY").expect("No Logsnag API Key (LOGSNAG_API_KEY) found in Environment.")
+        env::var("LOGSNAG_PROJECT").expect("No Logsnag Project (LOGSNAG_PROJECT) found in Environment.")
     );
 
     let publish_result = logsnag.event("channel","event")

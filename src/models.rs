@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use lazy_regex::regex;
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct TagHashMap {
     tags: HashMap<String, String>,
@@ -11,11 +12,11 @@ impl TagHashMap {
         Self { tags: HashMap::new() }
     }
 
-    pub fn insert(&mut self, key: &str, value: &str) {
+    pub fn insert<T: AsRef<str>, U: AsRef<str>>(&mut self, key: T, value: U) {
         //Remove special characters, spaces, numbers, and lowercase everything for LogSnag API constraints
         let re = regex!(r"[^a-zA-Z\s-]");
-        let key = re.replace_all(key, "");
-        let value = re.replace_all(value, "");
+        let key = re.replace_all(key.as_ref(), "");
+        let value = re.replace_all(value.as_ref(), "");
 
         let re_space = regex!(r"\s");
         let key = re_space.replace_all(&key, "-");
@@ -38,16 +39,16 @@ impl Serialize for TagHashMap {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
-pub struct Log<'a> {
-    pub project: &'a str,
-    pub channel: &'a str,
-    pub event: &'a str,
+pub struct Log {
+    pub project: String,
+    pub channel: String,
+    pub event: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<&'a str>,
+    pub description: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<&'a str>,
+    pub icon: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub notify: Option<bool>,
@@ -56,12 +57,12 @@ pub struct Log<'a> {
     pub tags: Option<TagHashMap>,
 }
 
-impl<'a> Log<'a> {
-    pub fn new(project: &'a str, channel: &'a str, event: &'a str) -> Log<'a> {
+impl Log {
+    pub fn new<T: AsRef<str>, U: AsRef<str>, V: AsRef<str>>(project: T, channel: U, event: V) -> Log {
         Log {
-            project,
-            channel,
-            event,
+            project: project.as_ref().to_owned(),
+            channel: channel.as_ref().to_owned(),
+            event: event.as_ref().to_owned(),
             description: None,
             icon: None,
             notify: None,
@@ -70,34 +71,38 @@ impl<'a> Log<'a> {
     }
 }
 
-
-
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-pub enum InsightValue<'a> {
-    Str(&'a str),
+pub enum InsightValue{
+    Str(String),
     Int(i32),
     Bool(bool)
 }
 
-impl<'a> From<&'a str> for InsightValue<'a> {
-    fn from(value: &'a str) -> Self {
+impl From<&str> for InsightValue {
+    fn from(value: &str) -> Self {
+        InsightValue::Str(value.to_string())
+    }
+}
+
+impl From<String> for InsightValue {
+    fn from(value: String) -> Self {
         InsightValue::Str(value)
     }
 }
 
-impl<'a> From<i32> for InsightValue<'a> {
+impl From<i32> for InsightValue {
     fn from(value: i32) -> Self {
         InsightValue::Int(value)
     }
 }
 
-impl<'a> From<bool> for InsightValue<'a> {
+impl From<bool> for InsightValue {
     fn from(value: bool) -> Self {
         InsightValue::Bool(value)
     }
 }
 
-impl Serialize for InsightValue<'_> {
+impl Serialize for InsightValue {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -111,39 +116,38 @@ impl Serialize for InsightValue<'_> {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
-pub struct Insight<'a> {
-    pub project: &'a str,
-    pub title: &'a str,
-    pub value: InsightValue<'a>,
+pub struct Insight {
+    pub project: String,
+    pub title: String,
+    pub value: InsightValue,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<&'a str>
+    pub icon: Option<String>,
 }
 
-impl<'a> Insight<'a> {
-    pub fn new(project: &'a str, title: &'a str, value: InsightValue<'a>) -> Insight<'a> {
+impl Insight {
+    pub fn new<T: AsRef<str>, U: AsRef<str>, V: Into<InsightValue>>(project: T, title: U, value: V) -> Insight {
         Insight {
-            project,
-            title,
-            value,
+            project: project.as_ref().to_owned(),
+            title: title.as_ref().to_owned(),
+            value: value.into(),
             icon: None,
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct Config<'a> {
-    pub api_token: &'a str,
-    pub project: &'a str,
+pub struct Config {
+    pub api_token: String,
+    pub project: String,
 }
 
-impl<'a> Config<'a> {
-    pub fn new(api_token: &'a str, project: &'a str) -> Config<'a> {
+impl Config {
+    pub fn new<T: AsRef<str>, U: AsRef<str>>(api_token: T, project: U) -> Config {
         Config {
-            api_token: api_token,
-            project: project
+            api_token: api_token.as_ref().to_owned(),
+            project: project.as_ref().to_owned()
         }
     }
 }
-
 
