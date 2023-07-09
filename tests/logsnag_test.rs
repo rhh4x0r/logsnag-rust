@@ -24,6 +24,15 @@ mod tests {
             .publish()
             .await;
 
+        let publish_result = logsnag.event("test","Test Event 2")
+            .with_notify(true)
+            .with_description("This is a test description.")
+            .with_icon("🥳")
+            .with_tag("tAg-one", "tag-value")
+            .with_tag("tagtwo", "tag-2-value")
+            .publish()
+            .await;
+
         println!("{:?}", publish_result);
 
         assert!(publish_result.is_ok());
