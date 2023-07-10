@@ -16,11 +16,10 @@ impl TagHashMap {
         //Remove special characters, spaces, numbers, and lowercase everything for LogSnag API constraints
         let re = regex!(r"[^a-zA-Z\s-]");
         let key = re.replace_all(key.as_ref(), "");
-        let value = re.replace_all(value.as_ref(), "");
 
         let re_space = regex!(r"\s");
         let key = re_space.replace_all(&key, "-");
-        let value  = re_space.replace_all(&value, "-");
+        let value  = re_space.replace_all(value.as_ref(), "-");
 
         let key_validated = key.to_lowercase();
         let value_validated = value.to_lowercase();
